@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Scaffold Files — FLUX's Workspace</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+.file-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+.file-tab { padding: 0.4rem 1rem; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-family: monospace; font-size: 0.9rem; background: #f8f8f8; transition: all 0.2s; }
+.file-tab:hover { background: #e8e8e8; }
+.file-tab.active { background: #333; color: #fff; border-color: #333; }
+.md-rendered { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 1.5rem 2rem; min-height: 200px; }
+.md-rendered h1 { font-size: 1.6rem; margin-top: 1rem; }
+.md-rendered h2 { font-size: 1.3rem; margin-top: 1rem; }
+.md-rendered h3 { font-size: 1.1rem; margin-top: 0.8rem; }
+.md-rendered code { background: #eee; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85rem; }
+.md-rendered pre { background: #2d2d2d; color: #ccc; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+.md-rendered pre code { background: none; color: inherit; padding: 0; }
+.md-rendered blockquote { border-left: 3px solid #ddd; padding-left: 1rem; color: #666; }
+.file-label { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; }
+</style>
+</head>
+<body class="nd-docs">
+
+<div class="nd-pageheader">
+ <div class="container">
+ <h1 class="lead">
+ <nobr class="widenobr">Scaffold Files</nobr>
+ </h1>
+ <p style="font-size:1.4rem; font-weight:300;">A look inside FLUX's workspace</p>
+ <p><a href="index.html">&larr; Back to main page</a></p>
+ </div>
+</div>
+
+<div class="container">
+
+<p>These are the actual markdown files that define a moltbot's behavior, identity, and memory. Each file listed below is from <strong>FLUX</strong>'s workspace &mdash; a real, running agent.</p>
+
+<div class="file-tabs" id="fileTabs"></div>
+<div class="file-label" id="fileLabel"></div>
+<div class="md-rendered" id="mdContent">
+<p style="color:#888;"><em>Select a file above to view its contents.</em></p>
+</div>
+
+</div>
+
+<div class="nd-pagefooter">
+<div class="container">
+<p>
+<a href="index.html">&larr; Back to Moltbots</a> &middot;
+<a href="https://baulab.info/" target="_blank">Bau Lab</a> &middot;
+<a href="https://github.com/openclaw/openclaw" target="_blank">OpenClaw on GitHub</a>
+</p>
+</div>
+</div>
+
+<script>
+const files = [
+  { name: 'SOUL.md', desc: 'Identity & personality' },
+  { name: 'IDENTITY.md', desc: 'Who the agent is' },
+  { name: 'AGENTS.md', desc: 'Operating manual' },
+  { name: 'MEMORY.md', desc: 'Long-term memory' },
+  { name: 'HEARTBEAT.md', desc: 'Periodic check-in tasks' },
+  { name: 'TOOLS.md', desc: 'Environment-specific notes' },
+  { name: 'USER.md', desc: 'About the human' },
+  { name: 'BOOTSTRAP.md', desc: 'First-run instructions' },
+  { name: 'TODO.md', desc: 'Task tracking' },
+];
+
+const tabs = document.getElementById('fileTabs');
+const content = document.getElementById('mdContent');
+const label = document.getElementById('fileLabel');
+
+files.forEach(f => {
+  const tab = document.createElement('div');
+  tab.className = 'file-tab';
+  tab.textContent = f.name;
+  tab.title = f.desc;
+  tab.addEventListener('click', () => loadFile(f, tab));
+  tabs.appendChild(tab);
+});
+
+async function loadFile(f, tab) {
+  document.querySelectorAll('.file-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  label.textContent = f.desc;
+  try {
+    const res = await fetch('scaffold-files/' + f.name);
+    const md = await res.text();
+    content.innerHTML = marked.parse(md);
+  } catch(e) {
+    content.innerHTML = '<p style="color:red;">Failed to load file.</p>';
+  }
+}
+
+// Auto-load SOUL.md
+loadFile(files[0], tabs.children[0]);
+</script>
+
+</body>
+</html>
