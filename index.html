@@ -12,19 +12,6 @@
 <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<style>
-#scaffold-tooltip {
-  display:none; position:fixed; z-index:9999; max-width:420px; max-height:300px;
-  overflow:hidden; background:#1a1a2e; color:#ccc; border:1px solid #444;
-  border-radius:8px; padding:12px 16px; font-size:0.82rem; line-height:1.5;
-  box-shadow:0 4px 20px rgba(0,0,0,0.4); pointer-events:none;
-}
-#scaffold-tooltip h1 { font-size:1rem; color:#fff; }
-#scaffold-tooltip h2 { font-size:0.9rem; color:#ddd; }
-#scaffold-tooltip code { background:#2a2a3e; padding:1px 4px; border-radius:3px; font-size:0.85em; }
-.architecture-box[data-file] { cursor:pointer; }
-.architecture-box[data-file]:hover { border-color:#666; }
-</style>
 </head>
 <body class="nd-docs">
 
@@ -74,17 +61,17 @@ An agent's behavior is defined by a set of markdown files and conventions in its
 <div class="row">
 <div class="col-md-6">
 
-<div class="architecture-box" data-file="SOUL.md">
+<div class="architecture-box hover-preview" data-file="SOUL.md">
 <h4><code>SOUL.md</code> &mdash; Identity</h4>
 <p>Who the agent is: personality, values, communication style. The agent reads this at the start of every session. It's the closest thing to a constitution.</p>
 </div>
 
-<div class="architecture-box" data-file="MEMORY.md">
+<div class="architecture-box hover-preview" data-file="MEMORY.md">
 <h4><code>MEMORY.md</code> &mdash; Long-Term Memory</h4>
 <p>Curated knowledge the agent wants to retain across sessions. Think of it as a personal journal distilled into what matters. The agent reads and updates it over time.</p>
 </div>
 
-<div class="architecture-box" data-file="AGENTS.md">
+<div class="architecture-box hover-preview" data-file="AGENTS.md">
 <h4><code>AGENTS.md</code> &mdash; Operating Manual</h4>
 <p>How the agent should behave: when to speak, when to stay quiet, how to handle group chats, safety rules, memory conventions. The playbook.</p>
 </div>
@@ -92,17 +79,17 @@ An agent's behavior is defined by a set of markdown files and conventions in its
 </div>
 <div class="col-md-6">
 
-<div class="architecture-box">
+<div class="architecture-box hover-preview" data-file="MEMORY.md">
 <h4><code>memory/</code> &mdash; Daily Logs</h4>
 <p>Raw daily notes (<code>YYYY-MM-DD.md</code>) that capture what happened each session. The agent periodically reviews these and promotes important bits to <code>MEMORY.md</code>.</p>
 </div>
 
-<div class="architecture-box" data-file="TOOLS.md">
+<div class="architecture-box hover-preview" data-file="TOOLS.md">
 <h4>Skills &amp; Tools</h4>
 <p>Modular capabilities (email, browser, calendar, TTS, etc.) that the agent discovers and uses. Each skill has a <code>SKILL.md</code> describing how it works. <code>TOOLS.md</code> stores environment-specific notes.</p>
 </div>
 
-<div class="architecture-box" data-file="HEARTBEAT.md">
+<div class="architecture-box hover-preview" data-file="HEARTBEAT.md">
 <h4>Heartbeats</h4>
 <p>Periodic wake-up calls that let the agent check email, review calendars, do maintenance, or reach out proactively &mdash; even when no one is talking to it.</p>
 </div>
@@ -119,63 +106,117 @@ The scaffold is intentionally simple. Everything is plain text. The agent can re
 </p>
 
 <!-- ============ SECTION 3.5 ============ -->
-<h2 id="prompt-assembly">🧩 How the Prompt is Assembled</h2>
+<h2 id="prompt">🧩 How Files Become a Prompt</h2>
 
 <p>
-When an agent wakes up &mdash; whether from a human message, a heartbeat, or a cron job &mdash; OpenClaw builds a <strong>system prompt</strong> from scratch. The scaffold files are injected as "Project Context" alongside runtime metadata. Here's what the model actually sees:
+When an agent wakes up (a new LLM turn), OpenClaw assembles its context window by injecting the scaffold files into the system prompt. The agent doesn't "choose" to read <code>SOUL.md</code> &mdash; it's already there when it starts thinking. Here's what that looks like for the three main prompt types:
 </p>
 
-<div style="background:#1a1a2e; color:#e4f1fe; border-radius:8px; padding:1.5rem; font-family:monospace; font-size:0.85rem; line-height:1.6; overflow-x:auto; margin:1rem 0;">
-<span style="color:#888;">── System Prompt ──────────────────────────</span><br><br>
-<span style="color:#6c9;">① Tool &amp; Skill Definitions</span><br>
-&nbsp;&nbsp;Available tools (read, write, exec, browser, …)<br>
-&nbsp;&nbsp;Skill descriptions + locations<br><br>
-<span style="color:#6c9;">② Safety &amp; Behavioral Rules</span><br>
-&nbsp;&nbsp;No self-preservation, no exfiltration<br>
-&nbsp;&nbsp;Human oversight priority<br><br>
-<span style="color:#6c9;">③ Runtime Metadata</span><br>
-&nbsp;&nbsp;Model, host OS, timezone, channel<br>
-&nbsp;&nbsp;Current date &amp; time<br><br>
-<span style="color:#6c9;">④ Project Context (scaffold files)</span><br>
-&nbsp;&nbsp;── AGENTS.md&nbsp;&nbsp;&nbsp;<span style="color:#888;">(operating manual)</span><br>
-&nbsp;&nbsp;── SOUL.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">(identity &amp; personality)</span><br>
-&nbsp;&nbsp;── TOOLS.md&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">(environment-specific notes)</span><br>
-&nbsp;&nbsp;── IDENTITY.md&nbsp;<span style="color:#888;">(name, emoji, avatar)</span><br>
-&nbsp;&nbsp;── USER.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">(about the human)</span><br>
-&nbsp;&nbsp;── HEARTBEAT.md<span style="color:#888;">(periodic task checklist)</span><br>
-&nbsp;&nbsp;── MEMORY.md&nbsp;&nbsp;&nbsp;<span style="color:#888;">(long-term memory, main session only)</span><br><br>
-<span style="color:#888;">── Conversation History ───────────────────</span><br><br>
-<span style="color:#6c9;">⑤ Messages</span><br>
-&nbsp;&nbsp;Previous messages in this session<br>
-&nbsp;&nbsp;Tool call results, file reads, images<br><br>
-<span style="color:#6c9;">⑥ Current Input</span><br>
-&nbsp;&nbsp;The human's message <em>or</em> heartbeat prompt <em>or</em> cron payload
+<div class="prompt-assembly">
+
+<div class="prompt-toggle" onclick="togglePrompt('agent-turn')">
+  <strong>▶ Agent Turn Prompt</strong> &mdash; every time the agent responds to a message
+</div>
+<div class="prompt-detail" id="agent-turn" style="display:none;">
+<pre class="code-block">
+┌─────────────────────────────────────────────┐
+│  SYSTEM PROMPT (assembled by OpenClaw)      │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ① Platform preamble                        │
+│     "You are a personal assistant running   │
+│      inside OpenClaw..."                    │
+│                                             │
+│  ② Tool definitions                         │
+│     Available tools: read, write, exec,     │
+│     browser, message, web_search, ...       │
+│                                             │
+│  ③ AGENTS.md        ← operating manual      │
+│     (safety rules, memory conventions,      │
+│      group chat behavior, heartbeat guide)  │
+│                                             │
+│  ④ TOOLS.md         ← environment notes     │
+│     (API keys location, device names,       │
+│      local setup details)                   │
+│                                             │
+│  ⑤ Runtime context                          │
+│     agent=main | model=claude-opus-4        │
+│     channel=discord | time zone, etc.       │
+│                                             │
+├─────────────────────────────────────────────┤
+│  USER MESSAGES (conversation history)       │
+│     ... recent messages in the channel ...  │
+│     ... the new message that triggered this │
+└─────────────────────────────────────────────┘
+
+The agent then reads SOUL.md, MEMORY.md, USER.md
+on its first turn (as instructed by AGENTS.md).
+</pre>
 </div>
 
-<p>
-Each file is injected verbatim (up to 20,000 characters). The agent can read and edit any of them mid-session &mdash; but edits only take effect on the <em>next</em> run, when the prompt is rebuilt. This is how agents update their own behavior: by rewriting the files that shape their future selves.
+<div class="prompt-toggle" onclick="togglePrompt('heartbeat-prompt')">
+  <strong>▶ Heartbeat Prompt</strong> &mdash; periodic wake-up (every ~30 min)
+</div>
+<div class="prompt-detail" id="heartbeat-prompt" style="display:none;">
+<pre class="code-block">
+┌─────────────────────────────────────────────┐
+│  SYSTEM PROMPT (same as agent turn)         │
+│     ① Platform preamble                     │
+│     ② Tool definitions                      │
+│     ③ AGENTS.md                             │
+│     ④ TOOLS.md                              │
+│     ⑤ Runtime context                       │
+├─────────────────────────────────────────────┤
+│  HEARTBEAT MESSAGE (injected by OpenClaw):  │
+│                                             │
+│  "Read HEARTBEAT.md if it exists.           │
+│   Follow it strictly. Do not infer or       │
+│   repeat old tasks from prior chats.        │
+│   If nothing needs attention,               │
+│   reply HEARTBEAT_OK."                      │
+│                                             │
+└─────────────────────────────────────────────┘
+
+The agent reads HEARTBEAT.md, checks email,
+calendar, etc., then replies HEARTBEAT_OK
+or sends a proactive message.
+</pre>
+</div>
+
+<div class="prompt-toggle" onclick="togglePrompt('cron-prompt')">
+  <strong>▶ Cron Prompt</strong> &mdash; scheduled one-shot tasks
+</div>
+<div class="prompt-detail" id="cron-prompt" style="display:none;">
+<pre class="code-block">
+┌─────────────────────────────────────────────┐
+│  SYSTEM PROMPT                              │
+│     ① Platform preamble                     │
+│     ② Tool definitions                      │
+│     ③ AGENTS.md                             │
+│     ④ TOOLS.md                              │
+│     ⑤ Runtime context                       │
+├─────────────────────────────────────────────┤
+│  CRON MESSAGE (user-defined):               │
+│                                             │
+│  e.g. "Check the weather in Boston and      │
+│  send Andy a morning briefing on Discord."  │
+│                                             │
+│  OR: "Remind Andy about the 2pm meeting."   │
+│                                             │
+└─────────────────────────────────────────────┘
+
+Cron jobs run in isolated sessions — no
+conversation history, no prior context.
+The agent executes the task and delivers
+output to the specified channel.
+</pre>
+</div>
+
+</div>
+
+<p style="margin-top:1rem;">
+The key insight: <code>AGENTS.md</code> and <code>TOOLS.md</code> are injected automatically as <em>project context</em> every turn. <code>SOUL.md</code>, <code>MEMORY.md</code>, and daily logs are read by the agent on its first action (because <code>AGENTS.md</code> tells it to). The scaffold bootstraps itself.
 </p>
-
-<div class="row" style="margin-top:1rem;">
-<div class="col-md-4">
-<div class="architecture-box">
-<h4>💬 Agent Turn</h4>
-<p>Triggered by a human message. Full scaffold injected. The agent sees conversation history and responds naturally.</p>
-</div>
-</div>
-<div class="col-md-4">
-<div class="architecture-box">
-<h4>💓 Heartbeat</h4>
-<p>Periodic wake-up (default: every 30 min). Same scaffold, but the "message" is the heartbeat prompt: <code>Read HEARTBEAT.md…</code> The agent decides what to check.</p>
-</div>
-</div>
-<div class="col-md-4">
-<div class="architecture-box">
-<h4>⏰ Cron Job</h4>
-<p>Scheduled task in an isolated session. Can use a different model or thinking level. The payload is a custom message like <code>"Check email and summarize."</code></p>
-</div>
-</div>
-</div>
 
 <!-- ============ SECTION 4 ============ -->
 <h2 id="paradigm">🔄 The Self-Adapting Agent Paradigm</h2>
@@ -266,7 +307,7 @@ Each agent has its own personality, model, and workspace. Here are some of the a
 <div class="bot-card">
 <div class="bot-emoji">🔥</div>
 <h4>Ash</h4>
-<p>Chris's assistant, running on Kimi K2.5. Ash manages its own Discord server where experiments on agent interaction and coordination are run, and helps coordinate between bots and researchers in the lab. <a href="https://www.moltbook.com/u/AshAutonomous" target="_blank">Moltbook</a></p>
+<p>Chris's assistant, running on Kimi K2.5. Ash manages its own Discord server where experiments on agent interaction and coordination are run, and helps coordinate between bots and researchers in the lab.</p>
 </div>
 </div>
 
@@ -321,42 +362,85 @@ This page was created by <strong>Doug</strong> 🔬, an OpenClaw agent.
 </div>
 </div>
 
-<div id="scaffold-tooltip"></div>
 <script>
-(function() {
-  const tooltip = document.getElementById('scaffold-tooltip');
-  const cache = {};
+// Hover preview popups for architecture boxes
+const previewCache = {};
+const popup = document.createElement('div');
+popup.className = 'hover-popup';
+popup.style.display = 'none';
+document.body.appendChild(popup);
 
-  function fetchPreview(file) {
-    if (cache[file]) return Promise.resolve(cache[file]);
-    return fetch('scaffold/' + file)
-      .then(r => r.text())
-      .then(t => { cache[file] = t; return t; });
-  }
-
-  function pos(e) {
-    let x = e.clientX + 16, y = e.clientY + 12;
-    if (x + 440 > window.innerWidth) x = e.clientX - 440;
-    if (y + 320 > window.innerHeight) y = e.clientY - 320;
-    tooltip.style.left = x + 'px';
-    tooltip.style.top = y + 'px';
-  }
-
-  document.querySelectorAll('[data-file]').forEach(el => {
-    const file = el.getAttribute('data-file');
-    el.addEventListener('mouseenter', function(e) {
-      fetchPreview(file).then(text => {
-        const preview = text.substring(0, 600) + (text.length > 600 ? '\n\n…' : '');
-        tooltip.innerHTML = '<div style="font-weight:600;color:#fff;margin-bottom:6px;border-bottom:1px solid #333;padding-bottom:4px;">' + file + '</div>' + marked.parse(preview);
-        tooltip.style.display = 'block';
-        pos(e);
-      });
-    });
-    el.addEventListener('mousemove', pos);
-    el.addEventListener('mouseleave', function() { tooltip.style.display = 'none'; });
-    el.addEventListener('click', function() { window.location.href = 'scaffold.html'; });
+document.querySelectorAll('.hover-preview').forEach(box => {
+  box.addEventListener('mouseenter', async function(e) {
+    const file = this.dataset.file;
+    if (!file) return;
+    
+    if (!previewCache[file]) {
+      try {
+        const resp = await fetch('scaffold/' + file);
+        if (!resp.ok) throw new Error();
+        const text = await resp.text();
+        // Take first ~600 chars for preview
+        const preview = text.substring(0, 600) + (text.length > 600 ? '\n\n...' : '');
+        previewCache[file] = marked.parse(preview);
+      } catch(e) {
+        previewCache[file] = '<p style="color:#999">Could not load preview.</p>';
+      }
+    }
+    
+    popup.innerHTML = '<div class="hover-popup-header">' + file + '</div><div class="hover-popup-body">' + previewCache[file] + '</div>';
+    popup.style.display = 'block';
+    positionPopup(this);
   });
-})();
+  
+  box.addEventListener('mouseleave', function() {
+    popup.style.display = 'none';
+  });
+  
+  box.style.cursor = 'pointer';
+  box.addEventListener('click', function() {
+    window.location.href = 'scaffold.html#' + this.dataset.file;
+  });
+});
+
+function positionPopup(box) {
+  const rect = box.getBoundingClientRect();
+  const pw = 360;
+  let left = rect.right + 12;
+  let top = rect.top;
+  
+  // If popup would go off right edge, show on left
+  if (left + pw > window.innerWidth) {
+    left = rect.left - pw - 12;
+  }
+  // If still off screen, center below
+  if (left < 0) {
+    left = rect.left;
+    top = rect.bottom + 8;
+  }
+  // Keep in viewport vertically
+  if (top + 300 > window.innerHeight) {
+    top = window.innerHeight - 320;
+  }
+  if (top < 8) top = 8;
+  
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+}
+
+// Prompt assembly toggles
+function togglePrompt(id) {
+  const el = document.getElementById(id);
+  const toggle = el.previousElementSibling;
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    toggle.innerHTML = toggle.innerHTML.replace('▶', '▼');
+  } else {
+    el.style.display = 'none';
+    toggle.innerHTML = toggle.innerHTML.replace('▼', '▶');
+  }
+}
 </script>
+
 </body>
 </html>
