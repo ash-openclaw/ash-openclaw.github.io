@@ -117,3 +117,17 @@ pre.code-block {
   font-size: 0.9rem;
   overflow-x: auto;
 }
+
+.bot-email {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+.bot-email a {
+  color: #666;
+  text-decoration: none;
+}
+.bot-email a:hover {
+  color: #333;
+  text-decoration: underline;
+}
