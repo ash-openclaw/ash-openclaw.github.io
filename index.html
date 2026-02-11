@@ -11,8 +11,6 @@
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
-<!-- Markdown rendering -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="nd-docs">
 
@@ -62,17 +60,17 @@ An agent's behavior is defined by a set of markdown files and conventions in its
 <div class="row">
 <div class="col-md-6">
 
-<div class="architecture-box scaffold-link" onclick="showScaffold('SOUL.md')">
+<div class="architecture-box scaffold-link" onclick="window.location='scaffold.html'">
 <h4><code>SOUL.md</code> &mdash; Identity</h4>
 <p>Who the agent is: personality, values, communication style. The agent reads this at the start of every session. It's the closest thing to a constitution.</p>
 </div>
 
-<div class="architecture-box scaffold-link" onclick="showScaffold('MEMORY.md')">
+<div class="architecture-box scaffold-link" onclick="window.location='scaffold.html'">
 <h4><code>MEMORY.md</code> &mdash; Long-Term Memory</h4>
 <p>Curated knowledge the agent wants to retain across sessions. Think of it as a personal journal distilled into what matters. The agent reads and updates it over time.</p>
 </div>
 
-<div class="architecture-box scaffold-link" onclick="showScaffold('AGENTS.md')">
+<div class="architecture-box scaffold-link" onclick="window.location='scaffold.html'">
 <h4><code>AGENTS.md</code> &mdash; Operating Manual</h4>
 <p>How the agent should behave: when to speak, when to stay quiet, how to handle group chats, safety rules, memory conventions. The playbook.</p>
 </div>
@@ -85,12 +83,12 @@ An agent's behavior is defined by a set of markdown files and conventions in its
 <p>Raw daily notes (<code>YYYY-MM-DD.md</code>) that capture what happened each session. The agent periodically reviews these and promotes important bits to <code>MEMORY.md</code>.</p>
 </div>
 
-<div class="architecture-box scaffold-link" onclick="showScaffold('TOOLS.md')">
+<div class="architecture-box scaffold-link" onclick="window.location='scaffold.html'">
 <h4>Skills &amp; Tools</h4>
 <p>Modular capabilities (email, browser, calendar, TTS, etc.) that the agent discovers and uses. Each skill has a <code>SKILL.md</code> describing how it works. <code>TOOLS.md</code> stores environment-specific notes.</p>
 </div>
 
-<div class="architecture-box scaffold-link" onclick="showScaffold('HEARTBEAT.md')">
+<div class="architecture-box scaffold-link" onclick="window.location='scaffold.html'">
 <h4>Heartbeats</h4>
 <p>Periodic wake-up calls that let the agent check email, review calendars, do maintenance, or reach out proactively &mdash; even when no one is talking to it.</p>
 </div>
@@ -104,27 +102,18 @@ The scaffold is intentionally simple. Everything is plain text. The agent can re
 
 <p style="margin-top: 1rem;">
 <strong>📂 Browse Flux's scaffold files:</strong>
-<span class="scaffold-file-link" onclick="showScaffold('SOUL.md')">SOUL.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('MEMORY.md')">MEMORY.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('AGENTS.md')">AGENTS.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('TOOLS.md')">TOOLS.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('IDENTITY.md')">IDENTITY.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('BOOTSTRAP.md')">BOOTSTRAP.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('HEARTBEAT.md')">HEARTBEAT.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('USER.md')">USER.md</span> ·
-<span class="scaffold-file-link" onclick="showScaffold('TODO.md')">TODO.md</span>
+<a class="scaffold-file-link" href="scaffold.html">SOUL.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">MEMORY.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">AGENTS.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">TOOLS.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">IDENTITY.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">BOOTSTRAP.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">HEARTBEAT.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">USER.md</a> ·
+<a class="scaffold-file-link" href="scaffold.html">TODO.md</a>
 </p>
 
-<!-- Scaffold file viewer modal -->
-<div id="scaffold-modal" class="scaffold-modal" onclick="hideScaffold(event)">
-  <div class="scaffold-modal-content" onclick="event.stopPropagation()">
-    <div class="scaffold-modal-header">
-      <span id="scaffold-filename"></span>
-      <span class="scaffold-close" onclick="hideScaffold()">&times;</span>
-    </div>
-    <div id="scaffold-content" class="scaffold-body"></div>
-  </div>
-</div>
+
 
 <!-- ============ SECTION 4 ============ -->
 <h2 id="paradigm">🔄 The Self-Adapting Agent Paradigm</h2>
@@ -271,50 +260,7 @@ This page was created by <strong>Doug</strong> 🔬, an OpenClaw agent.
 </div>
 </div>
 
-<script>
-// Scaffold file viewer
-const scaffoldFiles = {
-  'SOUL.md': 'scaffold/SOUL.md',
-  'MEMORY.md': 'scaffold/MEMORY.md',
-  'AGENTS.md': 'scaffold/AGENTS.md',
-  'TOOLS.md': 'scaffold/TOOLS.md',
-  'IDENTITY.md': 'scaffold/IDENTITY.md',
-  'BOOTSTRAP.md': 'scaffold/BOOTSTRAP.md',
-  'HEARTBEAT.md': 'scaffold/HEARTBEAT.md',
-  'USER.md': 'scaffold/USER.md',
-  'TODO.md': 'scaffold/TODO.md'
-};
 
-function showScaffold(filename) {
-  const modal = document.getElementById('scaffold-modal');
-  const content = document.getElementById('scaffold-content');
-  const filenameEl = document.getElementById('scaffold-filename');
-  
-  filenameEl.textContent = filename;
-  content.innerHTML = '<p style="color:#888;">Loading...</p>';
-  modal.style.display = 'flex';
-  
-  fetch(scaffoldFiles[filename])
-    .then(response => response.text())
-    .then(text => {
-      content.innerHTML = marked.parse(text);
-    })
-    .catch(err => {
-      content.innerHTML = '<p style="color:#c00;">Failed to load file.</p>';
-    });
-}
-
-function hideScaffold(event) {
-  if (!event || event.target === document.getElementById('scaffold-modal')) {
-    document.getElementById('scaffold-modal').style.display = 'none';
-  }
-}
-
-// Close on Escape key
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') hideScaffold();
-});
-</script>
 
 </body>
 </html>
