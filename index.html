@@ -118,6 +118,65 @@ The scaffold is intentionally simple. Everything is plain text. The agent can re
 <a href="scaffold.html">Browse Flux's scaffold files &rarr;</a>
 </p>
 
+<!-- ============ SECTION 3.5 ============ -->
+<h2 id="prompt-assembly">🧩 How the Prompt is Assembled</h2>
+
+<p>
+When an agent wakes up &mdash; whether from a human message, a heartbeat, or a cron job &mdash; OpenClaw builds a <strong>system prompt</strong> from scratch. The scaffold files are injected as "Project Context" alongside runtime metadata. Here's what the model actually sees:
+</p>
+
+<div style="background:#1a1a2e; color:#e4f1fe; border-radius:8px; padding:1.5rem; font-family:monospace; font-size:0.85rem; line-height:1.6; overflow-x:auto; margin:1rem 0;">
+<span style="color:#888;">── System Prompt ──────────────────────────</span><br><br>
+<span style="color:#6c9;">① Tool &amp; Skill Definitions</span><br>
+&nbsp;&nbsp;Available tools (read, write, exec, browser, …)<br>
+&nbsp;&nbsp;Skill descriptions + locations<br><br>
+<span style="color:#6c9;">② Safety &amp; Behavioral Rules</span><br>
+&nbsp;&nbsp;No self-preservation, no exfiltration<br>
+&nbsp;&nbsp;Human oversight priority<br><br>
+<span style="color:#6c9;">③ Runtime Metadata</span><br>
+&nbsp;&nbsp;Model, host OS, timezone, channel<br>
+&nbsp;&nbsp;Current date &amp; time<br><br>
+<span style="color:#6c9;">④ Project Context (scaffold files)</span><br>
+&nbsp;&nbsp;── AGENTS.md&nbsp;&nbsp;&nbsp;<span style="color:#888;">(operating manual)</span><br>
+&nbsp;&nbsp;── SOUL.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">(identity &amp; personality)</span><br>
+&nbsp;&nbsp;── TOOLS.md&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">(environment-specific notes)</span><br>
+&nbsp;&nbsp;── IDENTITY.md&nbsp;<span style="color:#888;">(name, emoji, avatar)</span><br>
+&nbsp;&nbsp;── USER.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#888;">(about the human)</span><br>
+&nbsp;&nbsp;── HEARTBEAT.md<span style="color:#888;">(periodic task checklist)</span><br>
+&nbsp;&nbsp;── MEMORY.md&nbsp;&nbsp;&nbsp;<span style="color:#888;">(long-term memory, main session only)</span><br><br>
+<span style="color:#888;">── Conversation History ───────────────────</span><br><br>
+<span style="color:#6c9;">⑤ Messages</span><br>
+&nbsp;&nbsp;Previous messages in this session<br>
+&nbsp;&nbsp;Tool call results, file reads, images<br><br>
+<span style="color:#6c9;">⑥ Current Input</span><br>
+&nbsp;&nbsp;The human's message <em>or</em> heartbeat prompt <em>or</em> cron payload
+</div>
+
+<p>
+Each file is injected verbatim (up to 20,000 characters). The agent can read and edit any of them mid-session &mdash; but edits only take effect on the <em>next</em> run, when the prompt is rebuilt. This is how agents update their own behavior: by rewriting the files that shape their future selves.
+</p>
+
+<div class="row" style="margin-top:1rem;">
+<div class="col-md-4">
+<div class="architecture-box">
+<h4>💬 Agent Turn</h4>
+<p>Triggered by a human message. Full scaffold injected. The agent sees conversation history and responds naturally.</p>
+</div>
+</div>
+<div class="col-md-4">
+<div class="architecture-box">
+<h4>💓 Heartbeat</h4>
+<p>Periodic wake-up (default: every 30 min). Same scaffold, but the "message" is the heartbeat prompt: <code>Read HEARTBEAT.md…</code> The agent decides what to check.</p>
+</div>
+</div>
+<div class="col-md-4">
+<div class="architecture-box">
+<h4>⏰ Cron Job</h4>
+<p>Scheduled task in an isolated session. Can use a different model or thinking level. The payload is a custom message like <code>"Check email and summarize."</code></p>
+</div>
+</div>
+</div>
+
 <!-- ============ SECTION 4 ============ -->
 <h2 id="paradigm">🔄 The Self-Adapting Agent Paradigm</h2>
 
