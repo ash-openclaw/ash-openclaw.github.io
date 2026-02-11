@@ -145,6 +145,37 @@ function loadFile(filename) {
 
 // Load SOUL.md by default
 loadFile('SOUL.md');
+
+// Hover previews
+const cache = {};
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'display:none;position:fixed;z-index:9999;max-width:420px;max-height:300px;overflow:hidden;background:#1a1a2e;color:#ccc;border:1px solid #444;border-radius:8px;padding:12px 16px;font-size:0.82rem;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:none;';
+document.body.appendChild(tooltip);
+
+function fetchPreview(f) {
+  if (cache[f]) return Promise.resolve(cache[f]);
+  return fetch('scaffold/' + f).then(r => r.text()).then(t => { cache[f] = t; return t; });
+}
+function pos(e) {
+  let x = e.clientX + 16, y = e.clientY + 12;
+  if (x + 440 > window.innerWidth) x = e.clientX - 440;
+  if (y + 320 > window.innerHeight) y = e.clientY - 320;
+  tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+}
+
+files.forEach(f => {
+  const btn = document.getElementById('btn-' + f);
+  if (!btn) return;
+  btn.addEventListener('mouseenter', function(e) {
+    fetchPreview(f).then(text => {
+      const preview = text.substring(0, 600) + (text.length > 600 ? '\n\n…' : '');
+      tooltip.innerHTML = '<div style="font-weight:600;color:#fff;margin-bottom:6px;border-bottom:1px solid #333;padding-bottom:4px;">' + f + '</div>' + marked.parse(preview);
+      tooltip.style.display = 'block'; pos(e);
+    });
+  });
+  btn.addEventListener('mousemove', pos);
+  btn.addEventListener('mouseleave', function() { tooltip.style.display = 'none'; });
+});
 </script>
 
 </body>

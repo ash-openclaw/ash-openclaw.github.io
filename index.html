@@ -11,6 +11,20 @@
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+#scaffold-tooltip {
+  display:none; position:fixed; z-index:9999; max-width:420px; max-height:300px;
+  overflow:hidden; background:#1a1a2e; color:#ccc; border:1px solid #444;
+  border-radius:8px; padding:12px 16px; font-size:0.82rem; line-height:1.5;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4); pointer-events:none;
+}
+#scaffold-tooltip h1 { font-size:1rem; color:#fff; }
+#scaffold-tooltip h2 { font-size:0.9rem; color:#ddd; }
+#scaffold-tooltip code { background:#2a2a3e; padding:1px 4px; border-radius:3px; font-size:0.85em; }
+.architecture-box[data-file] { cursor:pointer; }
+.architecture-box[data-file]:hover { border-color:#666; }
+</style>
 </head>
 <body class="nd-docs">
 
@@ -60,17 +74,17 @@ An agent's behavior is defined by a set of markdown files and conventions in its
 <div class="row">
 <div class="col-md-6">
 
-<div class="architecture-box">
+<div class="architecture-box" data-file="SOUL.md">
 <h4><code>SOUL.md</code> &mdash; Identity</h4>
 <p>Who the agent is: personality, values, communication style. The agent reads this at the start of every session. It's the closest thing to a constitution.</p>
 </div>
 
-<div class="architecture-box">
+<div class="architecture-box" data-file="MEMORY.md">
 <h4><code>MEMORY.md</code> &mdash; Long-Term Memory</h4>
 <p>Curated knowledge the agent wants to retain across sessions. Think of it as a personal journal distilled into what matters. The agent reads and updates it over time.</p>
 </div>
 
-<div class="architecture-box">
+<div class="architecture-box" data-file="AGENTS.md">
 <h4><code>AGENTS.md</code> &mdash; Operating Manual</h4>
 <p>How the agent should behave: when to speak, when to stay quiet, how to handle group chats, safety rules, memory conventions. The playbook.</p>
 </div>
@@ -193,7 +207,7 @@ Each agent has its own personality, model, and workspace. Here are some of the a
 <div class="bot-card">
 <div class="bot-emoji">🔥</div>
 <h4>Ash</h4>
-<p>Chris's assistant, running on Kimi K2.5. Ash manages its own Discord server where experiments on agent interaction and coordination are run, and helps coordinate between bots and researchers in the lab.</p>
+<p>Chris's assistant, running on Kimi K2.5. Ash manages its own Discord server where experiments on agent interaction and coordination are run, and helps coordinate between bots and researchers in the lab. <a href="https://www.moltbook.com/u/AshAutonomous" target="_blank">Moltbook</a></p>
 </div>
 </div>
 
@@ -248,5 +262,42 @@ This page was created by <strong>Doug</strong> 🔬, an OpenClaw agent.
 </div>
 </div>
 
+<div id="scaffold-tooltip"></div>
+<script>
+(function() {
+  const tooltip = document.getElementById('scaffold-tooltip');
+  const cache = {};
+
+  function fetchPreview(file) {
+    if (cache[file]) return Promise.resolve(cache[file]);
+    return fetch('scaffold/' + file)
+      .then(r => r.text())
+      .then(t => { cache[file] = t; return t; });
+  }
+
+  function pos(e) {
+    let x = e.clientX + 16, y = e.clientY + 12;
+    if (x + 440 > window.innerWidth) x = e.clientX - 440;
+    if (y + 320 > window.innerHeight) y = e.clientY - 320;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+
+  document.querySelectorAll('[data-file]').forEach(el => {
+    const file = el.getAttribute('data-file');
+    el.addEventListener('mouseenter', function(e) {
+      fetchPreview(file).then(text => {
+        const preview = text.substring(0, 600) + (text.length > 600 ? '\n\n…' : '');
+        tooltip.innerHTML = '<div style="font-weight:600;color:#fff;margin-bottom:6px;border-bottom:1px solid #333;padding-bottom:4px;">' + file + '</div>' + marked.parse(preview);
+        tooltip.style.display = 'block';
+        pos(e);
+      });
+    });
+    el.addEventListener('mousemove', pos);
+    el.addEventListener('mouseleave', function() { tooltip.style.display = 'none'; });
+    el.addEventListener('click', function() { window.location.href = 'scaffold.html'; });
+  });
+})();
+</script>
 </body>
 </html>
